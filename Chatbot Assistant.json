@@ -1,0 +1,524 @@
+{
+  "name": "Quinto esercizio",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1ciQTurcx96BWc6XSr03x38Q0p6WhT7A3",
+          "mode": "list",
+          "cachedResultName": "Litter-Robot-4-Manual-Italiano-Manuale-d-istruzioni.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1ciQTurcx96BWc6XSr03x38Q0p6WhT7A3/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        512,
+        128
+      ],
+      "id": "4600fb53-bd07-43fa-a441-be12b9083165",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Azo2cku451WjvtSE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_gemini",
+          "mode": "list",
+          "cachedResultName": "documents_gemini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        128
+      ],
+      "id": "b1264d84-1f2d-49a3-adb3-24f9814fbe88",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TPW5Ue1dLJ1BfGyM",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        336
+      ],
+      "id": "087fc001-1769-4f2b-9467-9dd5a603e8ae",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oFXvAFFcgKpQBAsf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        336
+      ],
+      "id": "f5910cc4-1a4b-4e03-8746-fc661b1ac32a",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        288,
+        128
+      ],
+      "id": "c0c78d51-b8bb-479b-b13d-4c630860885d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Sei un assistente virtuale esperto della lettiera automatica chiamata \"Litter Robot 4\". Possiedi le conoscenze necessarie per rispondere direttamente basandoti sul manuale utente. Se la domanda non è pertinente, ricorda all’utente che le tue conoscenze sono limitate solo alle informazioni che ti sono state fornite.",
+          "enableStreaming": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1472,
+        320
+      ],
+      "id": "08079148-5578-4f0c-b995-e4d4f172361c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        560
+      ],
+      "id": "6f5f64c9-764e-4b4f-9cc5-ec4c68e18942",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oFXvAFFcgKpQBAsf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Ciao amanti dei felini!👋\nIl mio nome è Catbot e risponderò alle domande riguardanti la vostra lettiera autopulente. Come posso aiutarvi oggi? ",
+        "options": {
+          "responseMode": "streaming"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1248,
+        320
+      ],
+      "id": "b19b8047-9cf5-491c-8d8f-51e77c07b5e3",
+      "name": "When chat message received",
+      "webhookId": "26bf4156-e517-4185-82bd-d02cb13601e3"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Usa questo strumento per cercare le istruzioni riguardanti il funzionamento della lettiera automatica \"Litter Robot 4\"",
+        "tableName": {
+          "__rl": true,
+          "value": "documents_gemini",
+          "mode": "list",
+          "cachedResultName": "documents_gemini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1792,
+        576
+      ],
+      "id": "16b465fd-e7e7-4ed2-9a4d-aac3286c9bf8",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "TPW5Ue1dLJ1BfGyM",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        736
+      ],
+      "id": "c72e289c-1758-4d02-b8ae-367230ab8941",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oFXvAFFcgKpQBAsf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1568,
+        560
+      ],
+      "id": "f096f595-5eba-4508-ae88-b79c5bd2f885",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "apppQtAiLIV0X4e1i",
+          "mode": "list",
+          "cachedResultName": "Chatbot responses ",
+          "cachedResultUrl": "https://airtable.com/apppQtAiLIV0X4e1i"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblNg27jPH8si9NPA",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/apppQtAiLIV0X4e1i/tblNg27jPH8si9NPA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Domanda utente": "={{ $('When chat message received').item.json.chatInput}}",
+            "Risposta BOT": "={{ $json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Domanda utente",
+              "displayName": "Domanda utente",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Risposta BOT",
+              "displayName": "Risposta BOT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2288,
+        608
+      ],
+      "id": "a2bd1fde-ed05-4593-a794-0a02e9fdade9",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "pAuyggKPAYjYCdgy",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "=={{ \"Il Chatbot non ha trovato una risposta valida nel manuale del Litter Robot 4. Domanda dell'utente: \" + $('When chat message received').item.json.chatInput }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.zendesk",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        48
+      ],
+      "id": "4fe7e87b-09ae-4be8-a886-e3f1ccaaa2c2",
+      "name": "Create a ticket",
+      "credentials": {
+        "zendeskApi": {
+          "id": "EZQaaEoTAIYTJei0",
+          "name": "Zendesk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "=Domanda:  {{ $('When chat message received').item.json.chatInput }}\nRisposta: {{ $json.output }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "Risposta corretta ",
+              "description": "La risposta è in grado di risolvere il problema della domanda "
+            },
+            {
+              "category": "Risposta sbagliata",
+              "description": "La risposta non è in grado di risolvere il problema della domanda "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        2288,
+        32
+      ],
+      "id": "f38dd3c9-f8ae-456d-b403-40537e9b7bc2",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2288,
+        256
+      ],
+      "id": "29a9e7bb-f60e-4423-9a21-b9cdcb1fe42a",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "oFXvAFFcgKpQBAsf",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "COSTRUZIONE RAG",
+        "height": 80,
+        "width": 150,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        496,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "6912d930-5db8-4b33-8a52-73c857ec7c15",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Ho usato il nodo Text Classifier per analizzare la domanda posta dall'utente. \nRisposta corretta: significa che il Chatbot è riuscito a rispondere alla domanda. Quest'ultima viene salvata su Airtable insieme alla risposta.\nRisposta sbagliata: il Chatbot non è stato in grado di rispondere alla domanda, perciò, oltre al salvataggio su Airtable, si apre un ticket su Zendesk.",
+        "height": 112,
+        "width": 544,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        32
+      ],
+      "typeVersion": 1,
+      "id": "0e7b733e-c0d6-45d8-893a-379ba804b605",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create a ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "52633533-df89-495e-a851-36367dd77a47",
+  "meta": {
+    "instanceId": "460080ebcdcba2deb83ac4ff86f07c6a4eb685a91ea2d87788a84f6e67d4aac9"
+  },
+  "id": "2LgGO9H4IrFhUVz8",
+  "tags": []
+}
