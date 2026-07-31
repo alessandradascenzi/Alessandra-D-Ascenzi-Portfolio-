@@ -1,0 +1,282 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        16
+      ],
+      "id": "ba1d0be9-ac6b-4bb1-981c-11871fe55d8d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un copywriter esperto di SEO e comunicazione digitale.\nScrivi un articolo SEO ottimizzato per il web, con tono professionale e coinvolgente, sull’argomento: \"{{$json.Argomento}}\".\n\nL’articolo deve includere:\n- Un titolo accattivante\n- Una breve introduzione\n- 3-4 sottosezioni con spiegazioni approfondite\n- Parole chiave pertinenti integrate in modo naturale\n- Una conclusione che inviti all’azione\n- Massimo 100 parole totali\n\n- L’output deve essere esclusivamente un oggetto JSON con queste chiavi:\n{\n  \"Name\": [inserisci qui solo il titolo dell’articolo],\n  \"Content\": [inserisci qui solo il testo completo dell’articolo, in linguaggio naturale, senza simboli, grassetti o markdown]\n}\n\n- Non scrivere altro testo, spiegazioni, o frasi introduttive. Non includere virgolette, asterischi, cancelletti o altri simboli nel contenuto.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        704,
+        32
+      ],
+      "id": "1ab3f59b-7f9f-41d3-a631-ba3fc4c4bbcf",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        560,
+        208
+      ],
+      "id": "82e996c4-9ddd-43d9-832a-4555dcddcd62",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GOOGLE_PALM_API_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        32
+      ],
+      "id": "300442dc-6c15-47bb-acfc-6a02c7289e6e",
+      "name": "Wait",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Foglio1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        16
+      ],
+      "id": "3917a2ac-5a04-4d33-9f27-70b006dec8ae",
+      "name": "Recupero righe dal foglio",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        16
+      ],
+      "id": "0d2b037d-74fd-42a2-8a8e-6a51f08d89e0",
+      "name": "Avvio programmato"
+    },
+    {
+      "parameters": {
+        "content": "Ho inserito il nodo Loop per elaborare ciascuna riga di dati individualmente, garantendo che ogni elemento sia pronto per le azioni successive. ",
+        "height": 112,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "574bc50d-a547-4afe-8267-2d6ec4879a1f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pageId": {
+          "__rl": true,
+          "value": "https://www.notion.so/YOUR_NOTION_PAGE_ID",
+          "mode": "url"
+        },
+        "title": "={{ $('Loop Over Items').item.json['Argomento'] }}",
+        "blockUi": {
+          "blockValues": [
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "={{$node['AI Agent'].json['output']}}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        32
+      ],
+      "id": "d36c2c80-e170-46e2-94af-4c3a2ea8af07",
+      "name": "Creazione pagina Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "YOUR_NOTION_CREDENTIAL_ID",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Ho inserito il nodo Wait per mettere in pausa il flusso di lavoro per un periodo di tempo prestabilito, evitando il sovraccarico dell'API e garantendo la corretta sincronizzazione dei dati. ",
+        "height": 176,
+        "width": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1168,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "5e5f0abd-708d-4397-87b6-5e30b35dabd9",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Creazione pagina Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recupero righe dal foglio": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avvio programmato": {
+      "main": [
+        [
+          {
+            "node": "Recupero righe dal foglio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creazione pagina Notion": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3074642b-1218-42c4-a9c2-25b9ae5bd992",
+  "meta": {
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
