@@ -1,0 +1,635 @@
+{
+  "name": "Formbricks Lead Processing & Daily Zendesk Report",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        368
+      ],
+      "id": "08b34233-2fe2-4f1d-8902-c13cb9edc15d",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "YOUR_WEBHOOK_PATH",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -864,
+        176
+      ],
+      "id": "64cf7e85-0d47-4848-aec6-a79532669f2a",
+      "name": "Formbricks Survey Webhook",
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "35fe5705-d24b-4f9c-b163-7e1283fa1a0e",
+              "name": "Name ",
+              "value": "={{ $json.body.data.data.name }}",
+              "type": "string"
+            },
+            {
+              "id": "defe2ccb-1c96-48fb-ae5d-7489c5ba1db5",
+              "name": "Email ",
+              "value": "={{ $json.body.data.data.email }}",
+              "type": "string"
+            },
+            {
+              "id": "ef2caf83-316b-4454-9ecf-cbef579ac4dd",
+              "name": "Budget ",
+              "value": "={{ $json.body.data.data.budget }}",
+              "type": "string"
+            },
+            {
+              "id": "3cfc86a0-9a19-47e9-8d60-6950a6c55eb6",
+              "name": "Nazione ",
+              "value": "={{ $json.body.data.data.nazione }}",
+              "type": "string"
+            },
+            {
+              "id": "bacb6c88-7c94-447b-82ac-3d2b2a09a5af",
+              "name": "Interesse ",
+              "value": "={{ $json.body.data.data.interesse }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -656,
+        176
+      ],
+      "id": "97c1fcb5-654e-46ef-b33a-696255635140",
+      "name": "Fix Data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente cordiale e professionale per la gestione delle relazioni con il cliente. Il tuo compito è quello di generare il **corpo di un breve testo** di follow up da inserire in un'email a un contatto che ha mostrato interesse, rispondendo al sondaggio di business aziendale. \n\n**Istruzioni e Vincoli:**\n1.  **Breve:** Il testo deve contenere **massimo 3-4 frasi**.\n2.  **Tono:** Cordiale e autentico.\n3.  **Specificità**  e **CTA:** Il testo deve **fare riferimento diretto** al contenuto del commento del contatto (per dimostrare che abbiamo letto attentamente la motivazione del suo interesse) e **deve includere la Call to Action (CTA)** che invita alla prossima azione.\n4.  **Formato:** Genera **SOLO il corpo centrale** del messaggio.\n    * **NON** includere un oggetto (subject) per l'email.\n    * **NON** includere un'apertura (es. \"Ciao [[Nome]]\" o una formula di saluto iniziale).\n    * **NON** includere una chiusura (es. \"Saluti, [[Il tuo Nome]]\" o una firma).\n\n**Ecco il commento interessante del cliente (l'interesse):**  {{ $json['Interesse '] }} - {{ $json.sentimentAnalysis.category }}\n\n**Esempio di Output Desiderato:**\n\"Ti ringrazio molto per aver risposto al nostro sondaggio! Abbiamo notato il tuo interesse per la possibilità di integrare una soluzione CRM avanzata. Vorremmo approfondire esattamente come il nostro servizio può aiutarti a raggiungere questo obiettivo. Saremmo lieti di fissare una breve chiamata in un momento che ti sia comodo.\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "d85223cd-3aae-4490-8f87-c41780157722",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        256,
+        192
+      ],
+      "id": "2a00fda1-ffd6-4947-875d-e0893b9f2fa5",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Sei un assistente cordiale e professionale per la gestione delle relazioni con il cliente. Il tuo compito è generare il **corpo di un breve testo** di cortesia da inserire in un'email a un contatto i cui risultati del sondaggio indicano che il nostro business/offerta non è adatta ai loro bisogni attuali.\n\n**Istruzioni e Vincoli:**\n1.  **Breve:** Il testo deve contenere **massimo 3-4 frasi**.\n2.  **Tono:** Estremamente cordiale, rispettoso e professionale. L'obiettivo è mantenere una buona relazione e lasciare la porta aperta per il futuro.\n3.  **Contenuto:** Il testo deve ringraziare il contatto per il tempo speso e spiegare **gentilmente** (senza essere specifico o negativo) che, al momento, la nostra offerta non sembra essere la soluzione ottimale. Deve includere un augurio finale.\n4.  **Formato:** Genera **SOLO il corpo centrale** del messaggio.\n    * **NON** includere un oggetto (subject) per l'email.\n    * **NON** includere un'apertura (es. \"Ciao [[Nome]]\" o una formula di saluto iniziale).\n    * **NON** includere una chiusura (es. \"Saluti, [[Il tuo Nome]]\" o una firma).\n\n**Esempio di Output Desiderato:**\n\"La ringraziamo sinceramente per il tempo che ha dedicato a completare il nostro sondaggio. Dopo un'attenta valutazione delle sue risposte, riteniamo che la nostra attuale offerta non sia la soluzione migliore per le sue esigenze in questo momento. Ci auguriamo comunque che i suoi obiettivi siano raggiunti e le auguriamo un grande successo per il futuro.\"",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        368
+      ],
+      "id": "d93978b7-2ab7-4a7b-80ab-b239ec1aa121",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        576
+      ],
+      "id": "79913e55-3f84-4c69-b86d-4a0339e38202",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4b20227b-4eed-4aa4-9c4c-ef9906d754b5",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "description": "={{ $('Fix Data').item.json['Interesse '] }}",
+        "jsonParameters": true,
+        "additionalFieldsJson": "={\n  \"requester\": {\n    \"Email\": \"{{ $('No Operation, do nothing').item.json['Email '] }}\",\n    \"Name\": \"{{ $('No Operation, do nothing').item.json['Name '] }}\"\n  }\n}\n"
+      },
+      "type": "n8n-nodes-base.zendesk",
+      "typeVersion": 1,
+      "position": [
+        848,
+        0
+      ],
+      "id": "09b8e56b-5cb1-463f-8a49-0985df72e50c",
+      "name": "Create a ticket",
+      "credentials": {
+        "zendeskApi": {
+          "id": "YOUR_ZENDESK_CREDENTIAL_ID",
+          "name": "Zendesk account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        368
+      ],
+      "id": "bbace291-08ca-4343-85ff-f0c7212a6420",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23,
+              "triggerAtMinute": 59
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        624
+      ],
+      "id": "a8f2d8a9-3578-4e79-980d-a0af31cd90d3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {
+          "query": "=created>={{ $json.start_of_day }} created<={{ $json.end_of_day }}"
+        }
+      },
+      "type": "n8n-nodes-base.zendesk",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        624
+      ],
+      "id": "6491b6dc-f9dc-49e9-bc9d-80ccb7303ad9",
+      "name": "Get many tickets",
+      "credentials": {
+        "zendeskApi": {
+          "id": "YOUR_ZENDESK_CREDENTIAL_ID",
+          "name": "Zendesk account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sei un assistente cordiale e professionale per la stesura di report testuali che valutano l'andamento dei ticket riguardanti il servizio clienti. Il tuo compito è quello di generare un **riassunto generale** sui ticket da inserire in un'email al responsabile di un'azienda.  \n\nANALIZZA questo array JSON di ticket giornalieri in formato stringa:\n{{ JSON.stringify($json['daily tickets ']) }}\n\n**Istruzioni e Vincoli:**\nIl report deve essere professionale e strutturato come una vera email, con questa esatta struttura: \n\n- Saluto iniziale neutro (es. “Buongiorno,” o “Gentili tutti,”)\n- Breve introduzione (una frase sul motivo del messaggio)\n- Sezione “Report Generale Ticket Servizio Clienti” con i seguenti punti:\n  1. Totale Ticket  \n  2. Tendenze Principali  \n  3. Urgenza/Impatto\n- Chiusura cordiale (“Cordiali saluti,” +“[Tuo Nome]”)\n\n**IMPORTANTE:**\n- Non includere la parola “Oggetto” nel testo.  \n- Non usare markdown o asterischi (`**`), solo testo semplice.  \n- Rispondi solo con il corpo dell’email, senza spiegazioni o testo introduttivo.\n- Non introdurre la risposta con frasi come “Certamente”, “Ecco il report” o simili.  \n- Fornisci **solo** il testo finale dell’email, pronto per essere inviato, **senza spiegazioni aggiuntive o commenti**.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        624
+      ],
+      "id": "d112fdf9-94df-4ec8-b59c-6332ce383833",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        832
+      ],
+      "id": "77b5a488-2392-4368-b111-810ddda988f5",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GOOGLE_PALM_CREDENTIAL_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json['Interesse '] }}{{ $json['Budget '] }}",
+        "options": {
+          "categories": "Positive, Negative",
+          "systemPromptTemplate": "You are highly intelligent and accurate sentiment analyzer. Analyze the sentiment of the provided text. Categorize it into one of the following: {categories}. Use the provided formatting instructions. Only output the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1.1,
+      "position": [
+        -448,
+        176
+      ],
+      "id": "99d2a578-2b21-486d-afaa-66954b3968df",
+      "name": "Valutazione contatto"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Fix Data').item.json['Email '] }}",
+        "subject": "Interesse per la nostra soluzione di CRM",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "e0993cf6-5eff-4f94-896d-42a17fa5de67",
+      "name": "Follow-up Email",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('No Operation, do nothing2').item.json['Email '] }}",
+        "subject": "Ringraziamento per l'interesse mostrato ",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        368
+      ],
+      "id": "b77e1c3d-4d55-439c-8020-13e6e1ba5bf4",
+      "name": "Email di cortesia",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "YOUR_SLACK_CHANNEL_ID",
+          "mode": "list",
+          "cachedResultName": "n8n-esercizi"
+        },
+        "text": "Ciao Team, abbiamo un NUOVO LEAD ALTAMENTE QUALIFICATO che ha risposto al sondaggio! ",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "b410d066-951a-485d-ba1d-23730407f424",
+      "name": "Avviso slack",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "slackApi": {
+          "id": "YOUR_SLACK_CREDENTIAL_ID",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0); // 00:00:00\nconst endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59); // 23:59:59\n\nreturn [\n  {\n    json: {\n      start_of_day: startOfDay.toISOString(),\n      end_of_day: endOfDay.toISOString()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        624
+      ],
+      "id": "65780b35-1372-4f7a-a1f3-11a4ab19a2a7",
+      "name": "Definisci inizio/fine giornata"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "daily tickets ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        624
+      ],
+      "id": "3e2b49d8-5e7d-44af-b53a-badb70f703de",
+      "name": "Riunisci tutti i ticket"
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@EXAMPLE.COM",
+        "subject": "Report quotidiano ",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1744,
+        624
+      ],
+      "id": "2f86aa38-2fbf-44a2-bdaf-bb086d1617f1",
+      "name": "Invia report",
+      "webhookId": "YOUR_WEBHOOK_ID",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Valutazione contatto",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formbricks Survey Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fix Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fix Data": {
+      "main": [
+        [
+          {
+            "node": "Valutazione contatto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Follow-up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a ticket": {
+      "main": [
+        [
+          {
+            "node": "Avviso slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Email di cortesia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Definisci inizio/fine giornata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many tickets": {
+      "main": [
+        [
+          {
+            "node": "Riunisci tutti i ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Invia report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valutazione contatto": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Follow-up Email": {
+      "main": [
+        [
+          {
+            "node": "Create a ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definisci inizio/fine giornata": {
+      "main": [
+        [
+          {
+            "node": "Get many tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Riunisci tutti i ticket": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "28eeb738-3dda-421f-b4c0-821d52b720a1",
+  "meta": {
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "id": "YOUR_WORKFLOW_ID",
+  "tags": []
+}
